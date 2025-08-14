@@ -624,6 +624,26 @@
         const reminderDays = 7;
         const GAS_URL ="https://script.google.com/macros/s/AKfycbwqCDWL_ZbK8AkuKF0FExzEAOQjiroigyx_4AXg6zabFsh-prKc0B5DPixs-sibyATs3w/exec";
 
+async function sendToGAS(payload) {
+  try {
+    const response = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Origin": "https://test-catatan.netlify.app/" // Sesuaikan dengan domain Anda
+      },
+      body: JSON.stringify(payload),
+      credentials: "omit"
+    });
+
+    if (!response.ok) throw new Error(await response.text());
+    return await response.json();
+  } catch (error) {
+    console.error("Gagal kirim data:", error);
+    throw error; // Lempar error ke function yang memanggil
+  }
+}
+
         function initDB() {
             const request = indexedDB.open(dbName, dbVersion);
             request.onupgradeneeded = (e) => {
@@ -698,19 +718,28 @@
   e.preventDefault();
   
   const payload = {
-    nama: document.getElementById("namaTabung").value,
-    tanggal: document.getElementById("tanggalTabung").value,
-    jumlah: parseRupiah(document.getElementById("jumlahTabung").value),
-    type: "setoran"
+    action: "updateTabungan",
+    data: {
+      saldo: [{ 
+        nama: document.getElementById("namaTabung").value,
+        total: parseRupiah(document.getElementById("jumlahTabung").value) 
+      }],
+      riwayat: {
+        nama: document.getElementById("namaTabung").value,
+        tanggal: document.getElementById("tanggalTabung").value,
+        type: "setoran",
+        jumlah: parseRupiah(document.getElementById("jumlahTabung").value),
+        admin: 0
+      }
+    }
   };
 
   try {
-    await saveTabungan(payload);
-    await syncTabunganToSheets(payload); // Langsung sync ke GAS
-    showNotification("Tabungan tersimpan!", "success");
-    document.getElementById("tabunganForm").reset();
+    const result = await sendToGAS(payload); // ✅ Pakai fungsi sendToGAS
+    console.log("Response dari GAS:", result);
+    alert("Data berhasil disimpan!");
   } catch (error) {
-    showNotification("Gagal sync ke Google Sheets: " + error.message, "error");
+    alert("Gagal menyimpan: " + error.message);
   }
 });
 

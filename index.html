@@ -877,6 +877,18 @@ async function saveTabungan(data) {
     showNotification("Gagal sync ke Google Sheets: " + error.message, "error");
   }
 });
+function calculateBunga() {
+            const jumlah = parseRupiah(document.getElementById('jumlahHutang').value);
+            const jenis = document.getElementById('jenisHutang').value;
+            let bunga = 0;
+            if (jenis === 'harian' || jenis === 'mingguan') {
+                bunga = (jumlah / 100000) * 50000;
+            } else if (jenis === 'bulanan') {
+                bunga = (jumlah / 1000000) * 100000;
+            }
+            const total = jumlah + bunga;
+            document.getElementById('totalHutangBunga').value = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
 
         // Modifikasi fungsi saveHutang
 async function saveHutang(data) {

@@ -1247,22 +1247,23 @@ async function saveHutang(data) {
       }
 async function syncTabunganToSheets(data) {
   try {
-    const payload = {
-      action: "updateTabungan",
-      data: {
-        saldo: [{
-          nama: data.nama,
-          total: data.jumlah // Total tabungan (untuk setoran)
-        }],
-        riwayat: {
-          nama: data.nama,
-          tanggal: data.tanggal,
-          type: data.type === "setoran" ? "Setor" : "Pengambilan",
-          jumlah: data.jumlah,
-          admin: data.admin || 0
-        }
-      }
-    };
+    // Frontend harus kirim seperti ini:
+const payload = {
+  action: "updateTabungan",
+  data: {
+    saldo: [{ 
+      nama: document.getElementById("namaTabung").value,
+      total: parseRupiah(document.getElementById("jumlahTabung").value) 
+    }],
+    riwayat: {
+      nama: document.getElementById("namaTabung").value,
+      tanggal: document.getElementById("tanggalTabung").value,
+      type: "setoran",
+      jumlah: parseRupiah(document.getElementById("jumlahTabung").value),
+      admin: 0
+    }
+  }
+};
 
     const response = await fetch(GAS_URL, {
       method: "POST",
